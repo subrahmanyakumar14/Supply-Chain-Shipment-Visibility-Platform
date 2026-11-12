@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Supply Chain Shipment Visibility Platform</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header class="topbar">
+        <div class="brand">🚚 Supply Chain Shipment Visibility Platform </div>
+        <input type="search" id="search" placeholder="Search shipment ID or city..." aria-label="Search shipments">
+    </header>
+
+        <main id="dashboard">
+            <h1>Dashboard</h1>
+            <p class="subtitle">Track the movement of goods from one place to another.</p>
+
+            <div class="content-grid">
+                <div class="left-side">
+                    <section class="stats" aria-label="Shipment summary">
+                        <div class="stat blue"><span>Total Shipments</span><strong id="totalCount">0</strong></div>
+                        <div class="stat cyan"><span>In Transit</span><strong id="transitCount">0</strong></div>
+                        <div class="stat green"><span>Delivered</span><strong id="deliveredCount">0</strong></div>
+                        <div class="stat pink"><span>Delayed</span><strong id="delayedCount">0</strong></div>
+                    </section>
+
+                    <section class="box" id="shipments">
+                        <div class="section-heading">
+                            <h2>Shipments</h2>
+                            <div class="actions">
+                                <select id="statusFilter" aria-label="Filter by status">
+                                    <option value="All">All Statuses</option>
+                                    <option value="Dispatched">Dispatched</option>
+                                    <option value="In Transit">In Transit</option>
+                                    <option value="Delivered">Delivered</option>
+                                    <option value="Delayed">Delayed</option>
+                                </select>
+                                <button id="updateButton" type="button" disabled>Update Status</button>
+                                <button id="deleteButton" type="button" disabled>Delete Shipment</button>
+                                <button id="addButton" type="button">+ Add Shipment</button>
+                            </div>
+                        </div>
+
+                        <div class="table-scroll">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Shipment ID</th>
+                                        <th>Origin</th>
+                                        <th>Destination</th>
+                                        <th>Status</th>
+                                        <th>ETA</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="shipmentTable"></tbody>
+                            </table>
+                        </div>
+                        <p id="noResults" class="empty">No shipments yet. Click + Add Shipment to create one.</p>
+                        <p class="hint">Select a shipment to track it, update its status, or delete it.</p>
+                    </section>
+
+                    <section class="box" id="analytics">
+                        <h2>Quick Analytics</h2>
+                        <p class="small">Number of shipments by status</p>
+                        <div class="analysis-row"><span>Dispatched</span><div class="bar"><div id="barDispatched" class="fill fill-gray"></div></div><b id="numDispatched">0</b></div>
+                        <div class="analysis-row"><span>In Transit</span><div class="bar"><div id="barTransit" class="fill fill-blue"></div></div><b id="numTransit">0</b></div>
+                        <div class="analysis-row"><span>Delivered</span><div class="bar"><div id="barDelivered" class="fill fill-green"></div></div><b id="numDelivered">0</b></div>
+                        <div class="analysis-row"><span>Delayed</span><div class="bar"><div id="barDelayed" class="fill fill-red"></div></div><b id="numDelayed">0</b></div>
+                    </section>
+                </div>
+
+                <div class="right-side">
+                    <section class="box" id="tracking">
+                        <h2>Tracking: <span id="trackingId">None selected</span></h2>
+                        <div class="steps">
+                            <div class="step"><div class="dot">1</div><span>Dispatched</span></div>
+                            <div class="step"><div class="dot">2</div><span>In Transit</span></div>
+                            <div class="step"><div class="dot">3</div><span>Arriving</span></div>
+                            <div class="step"><div class="dot">4</div><span>Delivered</span></div>
+                        </div>
+                        <p class="tracking-note" id="trackingNote">Add a shipment to see its tracking details.</p>
+                    </section>
+
+                    <section class="box">
+                        <h2>Shipment Route</h2>
+                        <div class="route">
+                            <div class="place">📦<strong id="routeFrom">—</strong><small>Origin</small></div>
+                            <div class="route-line">🚚</div>
+                            <div class="place">📍<strong id="routeTo">—</strong><small>Destination</small></div>
+                        </div>
+                        <p class="small">Simple route view (demo, not live GPS)</p>
+                    </section>
+
+                    <section class="box" id="alerts">
+                        <h2>Recent Alerts</h2>
+                        <div id="alertList">
+                            <p id="emptyAlerts" class="small">No recent activity.</p>
+                        </div>
+                    </section>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <dialog id="addDialog">
+        <form id="shipmentForm">
+            <h2>Add Shipment</h2>
+            <label>Shipment ID <input name="id" placeholder="Enter shipment ID" required maxlength="20"></label>
+            <label>Origin <input name="origin" placeholder="Delhi" required maxlength="40"></label>
+            <label>Destination <input name="destination" placeholder="Chandigarh" required maxlength="40"></label>
+            <label>Status
+                <select name="status">
+                    <option>Dispatched</option>
+                    <option>In Transit</option>
+                    <option>Delivered</option>
+                    <option>Delayed</option>
+                </select>
+            </label>
+            <label>Expected delivery date <input type="date" name="eta" required></label>
+            <p id="formError" class="form-error" role="alert"></p>
+            <div class="dialog-actions">
+                <button type="button" id="cancelButton" class="secondary">Cancel</button>
+                <button type="submit">Save Shipment</button>
+            </div>
+        </form>
+    </dialog>
+
+    <!-- Change status of a selected shipment -->
+    <dialog id="statusDialog">
+        <form id="statusForm">
+            <h2>Update Shipment Status</h2>
+            <p id="editShipmentId" class="small"></p>
+            <label>New Status
+                <select id="newStatus">
+                    <option>Dispatched</option>
+                    <option>In Transit</option>
+                    <option>Delayed</option>
+                    <option>Delivered</option>
+                </select>
+            </label>
+            <div class="dialog-actions">
+                <button type="button" id="closeStatus" class="secondary">Cancel</button>
+                <button type="submit">Save Changes</button>
+            </div>
+        </form>
+    </dialog>
+
+    <script src="script.js"></script>
+</body>
+</html>
